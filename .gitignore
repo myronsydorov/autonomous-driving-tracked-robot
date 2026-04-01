@@ -1,0 +1,40 @@
+# macOS system files
+.DS_Store
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.log
+*.swp
+*.swo
+
+# Virtual environment
+venv/
+.env/
+env/
+
+# ROS 2 build and logs
+build/
+install/
+log/
+
+# JetBrains / PyCharm
+.idea/
+
+# VS Code
+.vscode/
+
+# CMake
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+Makefile
+
+# ROS 2 workspace overlay stuff
+.colcon/
+
+# Other
+*.egg-info/
+
+
