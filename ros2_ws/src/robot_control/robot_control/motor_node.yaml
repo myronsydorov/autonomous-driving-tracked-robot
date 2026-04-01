@@ -1,0 +1,10 @@
+motor_node:
+  ros__parameters:
+    tcp_host: "192.168.0.115"
+    tcp_port: 6003
+    linear_scale: 1.0
+    angular_scale: 10.0
+    v_min: 0.25
+    v_max: 0.4
+    cmd_vel_timeout: 0.5
+    wheel_base: 0.3

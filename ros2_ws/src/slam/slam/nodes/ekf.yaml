@@ -1,0 +1,62 @@
+ros__parameters:
+  two_d_mode: true
+  frequency:      50.0
+  sensor_timeout: 1.0
+
+  # ——— Fuse only velocity from /odom ———
+  odom0: "/odom"
+  odom0_config: [
+    false, false, false,   # ignore pos x,y,z
+    false, false, false,   # ignore orient R,P,Y
+    true,  true,  false,   # fuse vel x,y
+    false, false, false,   # ignore ang vel
+    false, false, false    # ignore accel
+  ]
+  odom0_queue_size: 10
+  # pose cov: huge on diagonals so position is ignored
+  odom0_pose_covariance: [
+    1e6, 0,   0,   0,   0,   0,
+    0,   1e6, 0,   0,   0,   0,
+    0,   0,   1e6, 0,   0,   0,
+    0,   0,   0,   1e6, 0,   0,
+    0,   0,   0,   0,   1e6, 0,
+    0,   0,   0,   0,   0,   1e6
+  ]
+  # twist cov: small for vx, vy; huge elsewhere
+  odom0_twist_covariance: [
+    0.02, 0,    0,    0,   0,   0,
+    0,    0.02, 0,    0,   0,   0,
+    0,    0,    1e6,  0,   0,   0,
+    0,    0,    0, 1e6,   0,   0,
+    0,    0,    0,    0, 1e6,   0,
+    0,    0,    0,    0,   0, 1e6
+  ]
+
+  # ——— Optional: fuse IMU orientation ———
+  imu0: "/imu/data_raw"
+  imu0_config: [
+    false,false,false,   # ignore pos
+    true, true, true,    # fuse R,P,Y
+    false,false,false,   # ignore lin vel
+    false,false,false,   # ignore ang vel
+    false,false,false    # ignore accel
+  ]
+  imu0_queue_size: 50
+
+  # publish map→odom TF
+  publish_tf: true
+
+  # frame names
+  world_frame:     map
+  odom_frame:      odom
+  base_link_frame: base_link
+
+  # keep covariances well‐conditioned
+  process_noise_covariance: [
+    0.05,0,0,0,0,0,  0,0.05,0,0,0,0,  0,0,0.01,0,0,0,
+    0,0,0,0.01,0,0,  0,0,0,0,0.01,0,  0,0,0,0,0,0.01
+  ]
+  initial_estimate_covariance: [
+    1.0,0,0,0,0,0,  0,1.0,0,0,0,0,  0,0,1.0,0,0,0,
+    0,0,0,0.5,0,0,  0,0,0,0,0.5,0,  0,0,0,0,0,0.5
+  ]

@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>X_Nav</title>
+  <style>
+    :root {
+      --background-color: #222222;
+      --frame-color: #333333;
+      --text-color: #ffffff;
+      --primary-color: #5ec1e1;
+      --secondary-color: #3c4fe0;
+      --tertiary-color: #0d2242;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      height: 100vh;
+      background: var(--background-color);
+      font-family: 'Inter', sans-serif;
+      display: flex;
+      flex-direction: column;
+    }
+
+    canvas {
+      image-rendering: pixelated;   /* std */
+      image-rendering: crisp-edges; /* fallback */
+    }
+
+    .header {
+      height: 100px;
+      background: var(--background-color);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-shrink: 0;
+      padding: 10px;
+    }
+
+    .frame {
+      background: var(--frame-color);
+      border-radius: 20px;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .button {
+      width: 25%;
+      height: 100%;
+      margin: 5px;
+      align-items: center;
+      appearance: none;
+      background-image: radial-gradient(100% 100% at 100% 0, var(--primary-color) 0, var(--secondary-color) 100%);
+      border: 0;
+      border-radius: 25px;
+      box-shadow: rgba(45, 35, 66, .4) 0 2px 4px,var(--tertiary-color) 0 7px 13px -3px,var(--tertiary-color) 0 -3px 0 inset;
+      box-sizing: border-box;
+      color: var(--text-color);
+      cursor: pointer;
+      display: inline-flex;
+      font-family: "JetBrains Mono",monospace;
+      justify-content: center;
+      line-height: 1;
+      list-style: none;
+      overflow: hidden;
+      padding-left: 16px;
+      padding-right: 16px;
+      position: relative;
+      text-align: center;
+      text-decoration: none;
+      transition: box-shadow .15s,transform .15s;
+      user-select: none;
+      -webkit-user-select: none;
+      touch-action: manipulation;
+      will-change: box-shadow,transform;
+      font-size: 18px;
+      white-space: normal;
+    }
+
+    .button:hover {
+      box-shadow: var(--tertiary-color) 0 4px 8px, var(--tertiary-color) 0 7px 13px -3px, var(--secondary-color) 0 -3px 0 inset;
+      transform: translateY(-2px);
+    }
+
+    .button:active {
+      box-shadow: var(--secondary-color) 0 3px 7px inset;
+      transform: translateY(2px);
+    }
+
+    .button.colored {
+      --primary-color: #00ff8c;
+      --secondary-color: #176441;
+      --tertiary-color: #002213;
+      --text-color: #000000;
+    }
+    
+    .logwindow{
+      color: var(--text-color);
+      background: var(--background-color);
+      border-radius: 20px;
+      width: 100%;
+      height: 100%;
+      max-height: 100%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin: 5px;
+      overflow: hidden;
+      white-space: pre-wrap;      /* preserve whitespace but allow wrapping */
+      word-wrap: break-word;      /* break long words if needed */
+      overflow-wrap: break-word;
+    }
+
+    .controlframe {
+      background: var(--frame-color);
+      border-radius: 20px;
+      width: 100%;
+      height: 100%;
+      flex-direction: row;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 10px 5px 10px 5px;
+    }
+
+    .text {
+      font-family: "JetBrains Mono",monospace;
+      font-size: 48px;
+      font-weight: 600;
+      color: var(--text-color);
+      text-align: center;
+    }
+
+    .main {
+      flex: 1;
+      display: grid;
+      grid-template-columns: 50% 50%;
+      height: calc(100vh - 100px);
+    }
+
+    .map-section {
+      background: var(--background-color);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 0px 5px 10px 10px;
+    }
+
+    .right-section {
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+    }
+
+    .cam {
+      flex: 3;
+      background: var(--background-color);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 0px 10px 10px 5px;
+    }
+
+    .controls {
+      flex: 1;
+      min-height: 80px;
+      background: var(--background-color);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 0px 10px 10px 5px;
+    }
+
+    @media (max-width: 768px) {
+      .main {
+        grid-template-columns: 100%;
+        grid-template-rows: 50% 50%;
+      }
+
+      .right-section {
+        flex-direction: row;
+      }
+
+      .map-section {
+        padding-right: 10px;
+      }
+
+      .cam {
+        padding-right: 0px;
+      }
+
+      .cam, .controls {
+        flex: 1;
+        padding-left: 10px;
+      }
+    }
+
+    #camera_feed {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      background: #444; /* leichter grauer Hintergrund zum Test */
+      border-radius: 10px;
+    }
+  </style>
+</head>
+<body 
+  data-manual="{{manual}}"
+  data-autonomous="{{autonomous}}"
+  data-slam="{{slam_running}}">
+  <!-- header -->
+  <div class="header">
+    <div class="frame">
+      <div class="text">X_Nav</div>
+    </div>
+  </div>
+
+  <div class="main">
+    <!-- map -->
+    <div class="map-section">
+      <!--<img src="/data/Map/map_test.jpg" alt="Map" class="frame">-->
+      <canvas id="map" class="frame" alt="Ros Map"></canvas>
+    </div>
+
+    <div class="right-section">
+      <!-- cam -->
+      <div class="cam">
+        <!--<img src="/data/Cam/cam_test.jpg" alt="Cam" class="frame">-->
+        <img id="camera_feed" alt="Live Camera Feed" class="frame" />
+      </div>
+      <!-- controls -->
+      <div class="controls">
+        <div class="controlframe">
+          <button class="button" onclick="manualchange()" id="btn_man"> 
+            {% if manual %}
+              Manual control
+            {% else %}
+              Manual control
+            {% endif %}
+          </button>
+          <button class="button" onclick="nav2()" id="btn_auto">
+            {% if autonomous %}
+              Nav2
+            {% else %}
+              Nav2
+            {% endif %}
+          </button>
+          <button class="button" onclick="slamchange()" id="btn_slam">
+            {% if slam_running %}
+              SLAM
+            {% else %}
+              SLAM
+            {% endif %}
+          </button>
+          <button class="button" onclick="shutdown()"> Stop</button>
+          <pre class="logwindow">
+{{ log_content }}
+          </pre>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+
+<script>
+  const body = document.body;
+  const state_man = body.dataset.manual === "True";
+  const state_auto = body.dataset.autonomous === "True";
+  const state_slam = body.dataset.slam === "True";
+  console.log("Dataset debug:", body.dataset);
+
+  const btn_man = document.getElementById("btn_man");
+  const btn_auto = document.getElementById("btn_auto");
+  const btn_slam = document.getElementById("btn_slam");
+
+  if (state_man) btn_man.classList.add("colored");
+  if (state_auto) btn_auto.classList.add("colored");
+  if (state_slam) btn_slam.classList.add("colored");
+</script>
+
+<script>
+  function manualchange() {
+      fetch('/manualcontrol', {
+          method: 'POST'
+      })
+      .then(response => response.text())
+      .then(data => {
+          console.log(data);
+      })
+      .then(window.location.reload())
+      .catch(error => console.error('Error:', error));
+  }
+
+  function nav2() {
+      fetch('/nav2', {
+          method: 'POST'
+      })
+      .then(response => response.text())
+      .then(data => {
+          console.log(data);
+      })
+      .then(window.location.reload())
+      .catch(error => console.error('Error:', error));
+  }
+
+  function slamchange() {
+      fetch('/slam', {
+          method: 'POST'
+      })
+      .then(response => response.text())
+      .then(data => {
+          console.log(data);
+      })
+      .then(window.location.reload())
+      .catch(error => console.error('Error:', error));
+  }
+
+  function shutdown() {
+    fetch('/shutdown', {
+      method: 'POST'
+    })
+    .then(response => response.text())
+    .then(data => {
+      console.log(data);
+    })
+    .catch(error => console.error('Error:', error))
+  }
+  </script>
+
+  <!-- map -->
+  <script src="https://cdn.jsdelivr.net/npm/roslib/build/roslib.min.js"></script>
+  <script>
+    /* connect to rosbridge */
+    const ros = new ROSLIB.Ros({ url: 'ws://192.168.0.115:9090' });
+
+    /* main canvas */
+    const canvas = document.getElementById('map');
+    const ctx     = canvas.getContext('2d');
+    ctx.imageSmoothingEnabled = false;        // no blur when scaling
+
+    /* subscribe to /map (OccupancyGrid) */
+    new ROSLIB.Topic({
+      ros,
+      name: '/map',
+      messageType: 'nav_msgs/msg/OccupancyGrid'
+    }).subscribe(msg => {
+      console.log('Map message received:', msg);
+
+      const { info: { width, height }, data } = msg;
+
+      /* build raw image */
+      const img = ctx.createImageData(width, height);
+      for (let i = 0; i < data.length; i++) {
+        const v = data[i];
+        const c = v < 0 ? 230                 // unknown -> light gray
+                        : v === 0 ? 255       // free     -> white
+                        : 0;                  // occupied -> black
+        img.data.set([c, c, c, 255], i * 4);
+      }
+
+      /* off-screen buffer (fallback if OffscreenCanvas unsupported) */
+      const bufCanvas = 'OffscreenCanvas' in window
+                        ? new OffscreenCanvas(width, height)
+                        : Object.assign(document.createElement('canvas'),
+                                        { width, height });
+
+      const bctx = bufCanvas.getContext('2d');
+      bctx.imageSmoothingEnabled = false;
+      bctx.putImageData(img, 0, 0);
+
+      /* paint to visible canvas, scaled to 600×600 */
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.drawImage(bufCanvas, 0, 0, canvas.width, canvas.height);
+    });
+  </script>
+
+  <!-- cam -->
+  <script>
+    // Verbindung zu rosbridge auf 192.168.0.115:9090
+    const ros_cam = new ROSLIB.Ros({
+      url: 'ws://192.168.0.115:9090'
+    });
+
+
+    // Exaktes Topic aus deiner ros2-topic-list: /camera/image_raw/compressed
+    const cameraTopic = new ROSLIB.Topic({
+      ros: ros_cam,
+      name: '/camera/image_raw/compressed',
+      messageType: 'sensor_msgs/msg/CompressedImage'
+    });
+
+    console.log('→ Versuche, /camera/image_raw/compressed zu abonnieren …');
+    cameraTopic.subscribe(function(msg) {
+      console.log('📸 Kamera-Callback: Länge msg.data =', msg.data.length);
+      const imgElement = document.getElementById('camera_feed');
+      imgElement.src = 'data:image/jpeg;base64,' + msg.data;
+    });
+  </script>
+</html>

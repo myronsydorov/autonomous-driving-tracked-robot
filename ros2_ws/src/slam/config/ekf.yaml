@@ -1,0 +1,53 @@
+ekf_filter_node:
+  ros__parameters:
+    # core
+    frequency: 50.0
+    sensor_timeout: 0.1
+    two_d_mode: true
+    transform_time_offset: -0.05
+    predict_to_current_time: true
+    print_diagnostics: true
+
+    # frames
+    odom_frame: odom
+    base_link_frame: base_link
+    world_frame: odom
+
+    # IMU → EKF
+    imu0: /imu/data_raw
+    imu0_config: [false,false,false,  false,false,true,
+                  false,false,false,  false,false,true,
+                  false,false,false]
+    imu0_differential: false
+    imu0_relative: false
+    imu0_remove_gravitational_acceleration: true
+
+    # LiDAR odom → EKF
+    odom0: /kiss/odometry
+    odom0_config: [true, true, false,   # x y z position
+               false,false,true,   # roll pitch yaw orientation  (all false)
+               true,true,false,   # x y z lin vel
+               false,false,true,   # roll pitch yaw ang vel
+               false,false,false]   # x y z lin accel (unused)
+
+    odom0_pose_covariance: [
+      0.0001, 0.0,    0.0,     0.0, 0.0001, 0.0,
+      0.0,    0.0,    1e6,     0.0, 0.0,    1e6,
+      0.0,    0.0,    2.7e-5
+    ]
+
+    odom0_twist_covariance: [
+      0.0004, 0.0,    0.0,
+      0.0,    0.0004, 0.0,
+      0.0,    0.0,    2.5e-5
+    ]
+    odom0_differential: false
+    odom0_relative: false
+
+    imu0_queue_size: 50
+    odom0_queue_size: 10
+
+    # *big* pose covariance → downweight the LiDAR odom
+    publish_tf: true    
+    
+    
